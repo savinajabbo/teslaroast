@@ -13,20 +13,6 @@ export default async function DashboardPage() {
         return <p>Failed to load access token</p>;
     }
 
-    const regionRes = await fetch('https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/users/region', {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${tokenData.access_token}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ region: 'EU' }),
-    });
-
-    console.log('Region registration status:', regionRes.status, await regionRes.text())
-    if (!regionRes.ok) {
-        return <p>Region registration failed: {regionRes.status}</p>
-    }
-
     const teslaRes = await fetch('https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/products', {
         headers: {
             Authorization: `Bearer ${tokenData.access_token}`,

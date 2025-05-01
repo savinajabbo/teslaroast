@@ -39,6 +39,15 @@ export async function GET(request: NextRequest) {
         created_at: new Date(),
     });
 
+    await fetch('https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/users/region', {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${tokenData.access_token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ region: 'EU' }),
+    });
+
     if (error) {
         console.error('Supabase error saving tokens:', error);
         return NextResponse.json({ success: false, error: error.message}, { status: 500});
