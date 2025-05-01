@@ -1,6 +1,6 @@
 import LoginButton from './components/LoginButton';
 
-export default function Home() {
+export default function LogIn() {
   return (
     <main className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center">
@@ -14,4 +14,4 @@ export default function Home() {
       </div>
     </main>
   );
-} 
+}
