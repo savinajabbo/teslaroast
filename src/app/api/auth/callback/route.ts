@@ -12,7 +12,8 @@ export async function GET(request: NextRequest) {
             grant_type: 'authorization_code',
             client_id: process.env.TESLA_CLIENT_ID,
             client_secret: process.env.TESLA_CLIENT_SECRET,
-            redirect_uri: process.env.TESLA_REDIRECT_URI
+            redirect_uri: process.env.TESLA_REDIRECT_URI,
+            code,
         }),
     });
     const data = await tokenRes.json();
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
     await fetch('https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/users/region', {
         method: 'POST',
         headers: {
-            Authorization: `Bearer ${tokenData.access_token}`,
+            Authorization: `Bearer ${data.access_token}`,
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ region: 'EU' }),
