@@ -5,31 +5,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
 
-    const body = {
-        grant_type: 'authorization_code',
-        client_id: process.env.TESLA_CLIENT_ID,
-        client_secret: process.env.TESLA_CLIENT_SECRET,
-        code: code,
-        redirect_uri: process.env.TESLA_REDIRECT_URI
-    }
-
-    const response = await fetch('https://auth.tesla.com/oauth2/v3/token', {
+    const tokenRes = await fetch('https://auth.tesla.com/oauth2/v3/token', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            grant_type: 'authorization_code',
+            client_id: process.env.TESLA_CLIENT_ID,
+            client_secret: process.env.TESLA_CLIENT_SECRET,
+            redirect_uri: process.env.TESLA_REDIRECT_URI
+        }),
     });
-
-    const data = await response.json();
-
-    await supabase.from('tokens').insert({
-        user_id: data.account_id || 'demo_user',
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-        expires_in: data.expires_in,
-        created_at: new Date(),
-    });
+    const data = await tokenRes.json();
 
     const { error } = await supabase.from('tokens').insert({
         user_id: data.account_id || 'demo user',
@@ -38,6 +24,11 @@ export async function GET(request: NextRequest) {
         expires_in: data.expires_in,
         created_at: new Date(),
     });
+
+    if (error) {
+        console.error('Supabase error saving tokens:', error);
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
 
     await fetch('https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/users/region', {
         method: 'POST',
@@ -48,11 +39,5 @@ export async function GET(request: NextRequest) {
         body: JSON.stringify({ region: 'EU' }),
     });
 
-    if (error) {
-        console.error('Supabase error saving tokens:', error);
-        return NextResponse.json({ success: false, error: error.message}, { status: 500});
-    }
-
-    console.log('Tesla Tokens: ', data);
     return NextResponse.redirect(new URL('/dashboard', request.url));
 }
