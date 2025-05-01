@@ -31,14 +31,17 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
-    await fetch('https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/users/region', {
+    const regionRes = await fetch('https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/users/region', {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${data.access_token}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify({ region: 'EU' }),
     });
+
+    const regionText = await regionRes.text();
+    console.log('👋 [Callback] Region registration:', regionRes.status, regionText);
 
     return NextResponse.redirect(new URL('/dashboard', request.url));
 }
