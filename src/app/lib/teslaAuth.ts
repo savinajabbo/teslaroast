@@ -1,4 +1,3 @@
-import { PostgrestError } from "@supabase/supabase-js";
 import supabase from "../supabase";
 
 const TESLA_TOKEN_URL = 'https://auth.tesla.com/oauth2/v3/token';
