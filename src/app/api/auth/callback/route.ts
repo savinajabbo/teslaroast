@@ -19,14 +19,17 @@ export async function GET(request: NextRequest) {
         }),
     });
     const data = await tokenRes.json();
+    const userId = data.account_id
 
-    const { error } = await supabase.from('tokens').insert({
-        user_id: data.account_id || 'demo user',
+    const { error } = await supabase.from('tokens').upsert({
+        user_id: userId,
         access_token: data.access_token,
         refresh_token: data.refresh_token,
         expires_in: data.expires_in,
         created_at: new Date(),
-    });
+    },
+        { onConflict: 'user_id' }
+    );
 
     if (error) {
         console.error('Supabase error saving tokens:', error);
