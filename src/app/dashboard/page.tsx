@@ -3,6 +3,7 @@ import { getValidAccessToken } from "../lib/teslaAuth";
 
 const HOST = 'https://fleet-api.prd.na.vn.cloud.tesla.com';
 
+export default async function DashboardPage() {
     let accessToken: string;
     try {
         accessToken = await getValidAccessToken('demo_user');
