@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/app/supabase';
 
+const HOST = 'https://fleet-api.prd.na.vn.cloud.tesla.com';
+
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
@@ -31,13 +33,13 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
-    const regionRes = await fetch('https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/users/region', {
+    const regionRes = await fetch(`${HOST}/api/1/region`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${data.access_token}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ region: 'EU' }),
+        body: JSON.stringify({ region: 'NA' }),
     });
 
     const regionText = await regionRes.text();

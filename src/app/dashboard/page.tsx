@@ -1,5 +1,7 @@
 import supabase from "../supabase"
 
+const HOST = 'https://fleet-api.prd.na.vn.cloud.tesla.com';
+
 export default async function DashboardPage() {
     const { data: tokenData, error } = await supabase
     .from('tokens')
@@ -13,7 +15,7 @@ export default async function DashboardPage() {
         return <p>Failed to load access token</p>;
     }
 
-    const teslaRes = await fetch('https://fleet-api.prd.eu.vn.cloud.tesla.com/api/1/products', {
+    const teslaRes = await fetch(`${HOST}/api/1/products`, {
         headers: {
             Authorization: `Bearer ${tokenData.access_token}`,
         },
