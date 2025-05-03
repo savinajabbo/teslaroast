@@ -1,4 +1,3 @@
-import supabase from "../supabase";
 import { getValidAccessToken } from "../lib/teslaAuth";
 
 const HOST = 'https://fleet-api.prd.na.vn.cloud.tesla.com';
@@ -18,9 +17,10 @@ export default async function DashboardPage() {
     let accessToken: string;
     try {
         accessToken = await getValidAccessToken('demo_user');
-    } catch (err: any) {
-        console.error('Auth error:', err);
-        return <p style={{ color: 'red' }}>Authentication error: {err.message}</p>;
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : typeof err === 'string' ? err : 'Unknown error';
+        console.error('Auth error:', message);
+        return <p style={{ color: 'red' }}>Authentication error: {message}</p>;
     }
 
     const res = await fetch(`${HOST}/api/1/products`, {
