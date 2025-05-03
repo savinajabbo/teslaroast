@@ -19,24 +19,20 @@ export async function GET(request: NextRequest) {
         }),
     });
     const data = await tokenRes.json();
-    const userId = data.account_id
 
     const { error } = await supabase.from('tokens').upsert({
-        user_id: userId,
+        user_id: data.account_id || 'demo_user',
         access_token: data.access_token,
         refresh_token: data.refresh_token,
         expires_in: data.expires_in,
         created_at: new Date(),
-    },
-        { onConflict: 'user_id' }
-    );
-
+    });
     if (error) {
         console.error('Supabase error saving tokens:', error);
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    const regionRes = await fetch(`${HOST}/api/1/region`, {
+    const regionRes = await fetch(`${HOST}/api/1/users/region`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${data.access_token}`,
@@ -44,9 +40,7 @@ export async function GET(request: NextRequest) {
         },
         body: JSON.stringify({ region: 'NA' }),
     });
-
-    const regionText = await regionRes.text();
-    console.log('👋 [Callback] Region registration:', regionRes.status, regionText);
+    console.log('Region registration status:', regionRes.status, await regionRes.text());
 
     return NextResponse.redirect(new URL('/dashboard', request.url));
 }
