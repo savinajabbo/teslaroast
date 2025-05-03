@@ -2,22 +2,17 @@ import supabase from "../supabase";
 
 const TESLA_TOKEN_URL = 'https://auth.tesla.com/oauth2/v3/token';
 
-export async function getValidAccessToken(userId: string) {
+export async function getValidAccessToken(userId: string): Promise<string> {
     const { data: row, error: loadErr } = await supabase
         .from('tokens')
-        .select(`
-            access_token,
-            refresh_token,
-            expires_in,
-            created_at
-        `)
+        .select(`access_token,refresh_token,expires_in,created_at`)
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
 
     if (loadErr || !row) {
-        throw new Error('Could not load tokens from database.');
+        throw new Error('No tokens found for user');
     }
 
     const issuedAt = Math.floor(new Date(row.created_at).getTime() / 1000);
@@ -38,7 +33,9 @@ export async function getValidAccessToken(userId: string) {
             refresh_token: row.refresh_token,
         }),
     });
-    if (!res.ok) throw new Error('Failed refreshing token: ' + res.status);
+    if (!res.ok) {
+        throw new Error('Tesla token refresh failed: ' + res.status);
+    }
 
     const data = await res.json();
 
@@ -51,9 +48,9 @@ export async function getValidAccessToken(userId: string) {
             created_at: new Date(),
         })
         .eq('user_id', userId)
-        .eq('refresh_token', row.refresh_token);
+    if (saveErr) {
+        console.error('Failed to store refreshed token:', saveErr);
+    }
 
-    if (saveErr) throw new Error('Failed saving refreshed token.');
-
-    return data.access_token
+    return data.access_token;
 }
