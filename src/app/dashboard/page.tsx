@@ -1,26 +1,38 @@
-import { getValidAccessToken } from "../lib/teslaAuth";
+import supabase from "../supabase";
 
 const HOST = 'https://fleet-api.prd.na.vn.cloud.tesla.com';
 
 export default async function DashboardPage() {
-    let accessToken: string;
-    try {
-        accessToken = await getValidAccessToken('demo_user');
-    } catch (err) {
-        console.error('Error fetching valid token: ', err);
-        return <p>Authentication error. Please log in again.</p>
+    const { data: tokenData, error } = await supabase
+        .from('tokens')
+        .select('access_token')
+        .eq('user_id', 'demo_user')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+    
+    if (error || !tokenData) {
+        return <p>Failed to load access token: {error?.message || 'no token found'}</p>
     }
 
     const res = await fetch(`${HOST}/api/1/products`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: { Authorization: `Bearer ${tokenData.access_token}` },
         cache: 'no-store',
     });
+
+    const text = await res.text();
+    console.error('Tesla /products failed:', res.status, text);
+
     if (!res.ok) {
-        console.error('Tesla /products fetch failed:', await res.text());
-        return <p>Failed to load your vehicle data.</p>
+        return (
+            <p style={{ color: 'red' }}>
+                Failed to load vehicle data: {res.status} -<br />
+                <pre style={{ whiteSpace: 'pre-wrap' }}>{text}</pre>
+            </p>
+        );
     }
 
-    const { response } = await res.json();
+    const { response } = JSON.parse(text);
     const displayName = response?.[0]?.display_name || 'Tesla Driver';
 
     return (
@@ -29,8 +41,7 @@ export default async function DashboardPage() {
                 <h1 className="text-4xl font-bold text-foreground mb-4">
                     Welcome, {displayName}!
                 </h1>
-
             </div>
         </main>
-    )
+    );
 }
