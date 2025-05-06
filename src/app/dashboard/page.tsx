@@ -23,25 +23,29 @@ export default async function DashboardPage() {
         return <p style={{ color: 'red' }}>Authentication error: {message}</p>;
     }
 
-    const res = await fetch(`${HOST}/api/1/products`, {
+    const userRes = await fetch(`${HOST}/api/1/users/me`, {
         headers: { Authorization: `Bearer ${accessToken}` },
         cache: 'no-store',
     });
 
-    const text = await res.text();
+    let displayName = 'Tesla Driver';
 
-    if (!res.ok) {
-        console.error('Tesla /products failed:', res.status, text);
-        return (
-            <p style={{ color: 'red' }}>
-                Failed to load vehicle data: {res.status} -<br />
-                <pre style={{ whiteSpace: 'pre-wrap' }}>{text}</pre>
-            </p>
-        );
+    if (userRes.ok) {
+        const userData = await userRes.json();
+        displayName = userData.response?.[0]?.display_name || displayName;
+    } else {
+        const productsRes = await fetch(`${HOST}/api/1/products`, {
+            headers: { Authorization: `Bearer $(accessToken)`},
+            cache: 'no-store',
+        });
+
+        if (productsRes.ok) {
+            const { response } = await productsRes.json();
+            displayName = response?.[0]?.display_name || displayName;
+        } else {
+            console.error('Failed to fetch user data:', await productsRes.text());
+        }
     }
-
-    const { response } = JSON.parse(text);
-    const displayName = response?.[0]?.display_name || 'Tesla Driver';
 
     return (
         <main className="min-h-screen bg-background flex items-center justify-center">
