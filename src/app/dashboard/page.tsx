@@ -29,21 +29,25 @@ export default async function DashboardPage() {
     });
 
     let displayName = 'Tesla Driver';
-
+    
     if (userRes.ok) {
         const userData = await userRes.json();
-        displayName = userData.response?.[0]?.display_name || displayName;
+        console.log('User data response:', userData);
+        displayName = userData.response?.name || userData.response?.email || displayName;
     } else {
+        console.error('Failed to fetch user data:', await userRes.text());
+        
         const productsRes = await fetch(`${HOST}/api/1/products`, {
-            headers: { Authorization: `Bearer $(accessToken)`},
+            headers: { Authorization: `Bearer ${accessToken}` },
             cache: 'no-store',
         });
 
         if (productsRes.ok) {
             const { response } = await productsRes.json();
+            console.log('Products response:', response);
             displayName = response?.[0]?.display_name || displayName;
         } else {
-            console.error('Failed to fetch user data:', await productsRes.text());
+            console.error('Failed to fetch products:', await productsRes.text());
         }
     }
 
