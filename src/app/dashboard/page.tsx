@@ -32,8 +32,14 @@ export default async function DashboardPage() {
     
     if (userRes.ok) {
         const userData = await userRes.json();
+
+        const fullName = userData.response?.full_name;
+        if (fullName) {
+            displayName = fullName.split(' ')[0];
+        } else if (userData.response?.email) {
+            displayName = userData.response?.email;
+        }
         console.log('User data response:', userData);
-        displayName = userData.response?.name || userData.response?.email || displayName;
     } else {
         console.error('Failed to fetch user data:', await userRes.text());
         
